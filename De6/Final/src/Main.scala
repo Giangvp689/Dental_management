@@ -14,7 +14,7 @@ object Main {
     // 3.1 Đọc dữ liệu nha Hoa Bị Rồ
     val dfRaw = spark.read
       .option("header", "true")
-      .option("inferSchema", "true")
+      .option("inferSchema", "true") Giang chó
       .csv("D:/Kiến thức cơ sở ngành/Big Data/census_1000.csv")
 
     println("===== DATA =====")
