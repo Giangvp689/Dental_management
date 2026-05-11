@@ -11,7 +11,7 @@ object Main {
 
     import spark.implicits._
 
-    // 3.1 Đọc dữ liệu nha AAAAAA
+    // 3.1 Đọc dữ liệu nha GGGG
     val dfRaw = spark.read
       .option("header", "true")
       .option("inferSchema", "true")
