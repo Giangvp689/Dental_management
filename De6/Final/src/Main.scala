@@ -11,10 +11,10 @@ object Main {
 
     import spark.implicits._
 
-    // 3.1 Đọc dữ liệu nha Dương Khùng
+    // 3.1 Đọc dữ liệu nha Dương Khùng Hoa Ăn buồi
     val dfRaw = spark.read
       .option("header", "true")
-      .option("inferSchema", "true") Giang chó
+      .option("inferSchema", "true")
       .csv("D:/Kiến thức cơ sở ngành/Big Data/census_1000.csv")
 
     println("===== DATA =====")
