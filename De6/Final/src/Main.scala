@@ -4,7 +4,7 @@ import org.apache.spark.sql.functions._
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val spark = SparkSession.builder()
+    val spark = SparkSession.builder() Giang rồ s
       .appName("Census")
       .master("local[*]")
       .getOrCreate()
