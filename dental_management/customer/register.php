@@ -1,6 +1,6 @@
 <?php
 /* =====================================================
-   REGISTER.PHP – FORM ĐẶT LỊCH (DÙNG TRONG MODAL)
+   REGISTER.PHP – FORM ĐẶT LỊCH (DÙNG TRONG MODAL) nha
    ===================================================== */
 
 /* ===== KẾT NỐI DB ===== */
