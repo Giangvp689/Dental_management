@@ -4,15 +4,15 @@ import org.apache.spark.sql.functions._
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val spark = SparkSession.builder() Giang rồ s
+    val spark = SparkSession.builder()
       .appName("Census")
       .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
-    
+ AAAAAA
 
-    // 3.1 Đọc dữ liệu nha 
+    // 3.1 Đọc dữ liệu nha  OK Nhe
     val dfRaw = spark.read
       .option("header", "true")
       .option("inferSchema", "true")
