@@ -1,0 +1,329 @@
+CREATE DATABASE dental_management;
+USE dental_management;
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    role ENUM('ADMIN','DOCTOR','RECEPTIONIST') NOT NULL,
+    status TINYINT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE appointment_requests (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    full_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    email VARCHAR(100),
+    gender ENUM('Nam','Nữ','Khác'),
+    dob DATE,
+
+    appointment_date DATE NOT NULL,
+    appointment_time TIME NOT NULL,
+
+    source ENUM('Website','Điện thoại','Fanpage') DEFAULT 'Website',
+    note TEXT,
+
+    status ENUM(
+        'Chờ xác nhận',
+        'Đã xác nhận',
+        'Đã đến',
+        'Không đến',
+        'Hủy'
+    ) DEFAULT 'Chờ xác nhận',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE patients (
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    full_name VARCHAR(100) NOT NULL,
+    gender ENUM('Nam','Nữ','Khác'),
+    dob DATE,
+    phone VARCHAR(15) UNIQUE,
+    address VARCHAR(255),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE patients
+ADD status ENUM('Hoạt động','Ngưng') DEFAULT 'Hoạt động';
+
+
+CREATE TABLE doctors (
+    doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    specialty VARCHAR(100),
+    phone VARCHAR(15),
+    email VARCHAR(100)
+);
+ALTER TABLE doctors
+ADD status ENUM('Hoạt động','Ngưng') DEFAULT 'Hoạt động';
+
+CREATE TABLE appointments (
+    appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    request_id INT NULL,
+
+    appointment_date DATE NOT NULL,
+    appointment_time TIME NOT NULL,
+
+    status ENUM('Đang khám','Hoàn thành','Hủy') DEFAULT 'Đang khám',
+
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id),
+    FOREIGN KEY (request_id) REFERENCES appointment_requests(request_id)
+);
+CREATE TABLE medical_records (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_id INT NOT NULL,
+
+    visit_date DATE NOT NULL,
+
+    symptoms TEXT,
+    diagnosis TEXT,
+    treatment_plan TEXT,
+    notes TEXT,
+
+    status ENUM('Đang khám','Hoàn tất') DEFAULT 'Đang khám',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id),
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);
+CREATE TABLE medicines (
+    medicine_id INT AUTO_INCREMENT PRIMARY KEY,
+    medicine_name VARCHAR(100) NOT NULL,
+    unit VARCHAR(50),
+    price DECIMAL(10,2),
+    description TEXT
+);
+CREATE TABLE prescriptions (
+    prescription_id INT AUTO_INCREMENT PRIMARY KEY,
+    record_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (record_id) REFERENCES medical_records(record_id)
+);
+CREATE TABLE prescription_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    prescription_id INT NOT NULL,
+    medicine_id INT NOT NULL,
+
+    dosage VARCHAR(100),
+    frequency VARCHAR(100),
+    duration VARCHAR(50),
+
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(prescription_id),
+    FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id)
+);
+CREATE TABLE services (
+    service_id INT AUTO_INCREMENT PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    description TEXT
+);
+CREATE TABLE invoices (
+    invoice_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    patient_id INT NOT NULL,
+    appointment_id INT NOT NULL,
+
+    total_amount DECIMAL(10,2),
+    invoice_date DATE DEFAULT CURRENT_DATE,
+
+    status ENUM('Chưa thanh toán','Đã thanh toán') DEFAULT 'Chưa thanh toán',
+
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);
+CREATE TABLE invoice_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    service_id INT NOT NULL,
+    quantity INT DEFAULT 1,
+    price DECIMAL(10,2),
+
+    FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
+    FOREIGN KEY (service_id) REFERENCES services(service_id)
+);
+CREATE TABLE payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    invoice_id INT NOT NULL,
+    payment_date DATE DEFAULT CURRENT_DATE,
+    payment_method ENUM('Tiền mặt','Chuyển khoản','Thẻ'),
+    amount DECIMAL(10,2),
+
+    FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
+);
+
+CREATE TABLE medical_services (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    record_id INT,
+    service_id INT,
+    quantity INT DEFAULT 1,
+    FOREIGN KEY (record_id) REFERENCES medical_records(record_id),
+    FOREIGN KEY (service_id) REFERENCES services(service_id)
+);
+
+
+
+ALTER TABLE medical_records
+DROP FOREIGN KEY medical_records_ibfk_3;
+
+ALTER TABLE medical_records
+MODIFY appointment_id INT NULL;
+
+ALTER TABLE medical_records
+ADD CONSTRAINT fk_medical_appointment
+FOREIGN KEY (appointment_id)
+REFERENCES appointments(appointment_id)
+ON DELETE SET NULL;
+
+
+INSERT INTO users (username, password, full_name, role) VALUES
+('admin1','123','Admin One','ADMIN'),
+('doctor1','123','BS Nguyễn An','DOCTOR'),
+('doctor2','123','BS Trần Bình','DOCTOR'),
+('doctor3','123','BS Lê Cường','DOCTOR'),
+('recept1','123','Lễ tân Mai','RECEPTIONIST'),
+('recept2','123','Lễ tân Lan','RECEPTIONIST'),
+('doctor4','123','BS Phạm Dũng','DOCTOR'),
+('doctor5','123','BS Võ Hạnh','DOCTOR'),
+('recept3','123','Lễ tân Hồng','RECEPTIONIST'),
+('admin2','123','Admin Two','ADMIN');
+INSERT INTO doctors (full_name, specialty, phone, email) VALUES
+('BS Nguyễn An','Răng tổng quát','0901000001','an@gmail.com'),
+('BS Trần Bình','Chỉnh nha','0901000002','binh@gmail.com'),
+('BS Lê Cường','Implant','0901000003','cuong@gmail.com'),
+('BS Phạm Dũng','Nha chu','0901000004','dung@gmail.com'),
+('BS Võ Hạnh','Răng trẻ em','0901000005','hanh@gmail.com'),
+('BS Đỗ Minh','Phẫu thuật','0901000006','minh@gmail.com'),
+('BS Lý Anh','Thẩm mỹ','0901000007','anh@gmail.com'),
+('BS Hoàng Long','Tổng quát','0901000008','long@gmail.com'),
+('BS Mai Phương','Nội nha','0901000009','phuong@gmail.com'),
+('BS Trịnh Sơn','Răng hàm mặt','0901000010','son@gmail.com');
+INSERT INTO appointment_requests 
+(full_name, phone, email, gender, dob, appointment_date, appointment_time, status) VALUES
+('Nguyễn Văn A','0911111111','a@gmail.com','Nam','1995-02-10','2025-01-10','08:00','Đã đến'),
+('Trần Thị B','0911111112','b@gmail.com','Nữ','1998-03-15','2025-01-11','09:00','Đã đến'),
+('Lê Văn C','0911111113','c@gmail.com','Nam','1990-05-20','2025-01-12','10:00','Không đến'),
+('Phạm Thị D','0911111114','d@gmail.com','Nữ','1992-06-18','2025-01-13','14:00','Đã đến'),
+('Hoàng Văn E','0911111115','e@gmail.com','Nam','1985-07-22','2025-01-14','15:00','Hủy'),
+('Võ Thị F','0911111116','f@gmail.com','Nữ','2000-01-01','2025-01-15','08:30','Đã đến'),
+('Đặng Văn G','0911111117','g@gmail.com','Nam','1996-09-09','2025-01-16','09:30','Đã xác nhận'),
+('Ngô Thị H','0911111118','h@gmail.com','Nữ','1994-11-11','2025-01-17','10:30','Đã đến'),
+('Phan Văn I','0911111119','i@gmail.com','Nam','1988-04-04','2025-01-18','13:30','Đã đến'),
+('Bùi Thị K','0911111120','k@gmail.com','Nữ','1999-12-12','2025-01-19','16:00','Không đến');
+INSERT INTO patients (full_name, gender, dob, phone, address) VALUES
+('Nguyễn Văn A','Nam','1995-02-10','0911111111','Hà Nội'),
+('Trần Thị B','Nữ','1998-03-15','0911111112','Hải Phòng'),
+('Phạm Thị D','Nữ','1992-06-18','0911111114','Đà Nẵng'),
+('Võ Thị F','Nữ','2000-01-01','0911111116','Huế'),
+('Ngô Thị H','Nữ','1994-11-11','0911111118','TP HCM'),
+('Phan Văn I','Nam','1988-04-04','0911111119','Cần Thơ'),
+('Lê Quốc L','Nam','1991-08-08','0911111130','Hà Nội'),
+('Trần Văn M','Nam','1987-09-19','0911111131','Nam Định'),
+('Nguyễn Thị N','Nữ','1993-10-10','0911111132','Ninh Bình'),
+('Hoàng Văn O','Nam','1980-01-01','0911111133','Bắc Ninh');
+INSERT INTO appointments 
+(patient_id, doctor_id, request_id, appointment_date, appointment_time, status) VALUES
+(1,1,1,'2025-01-10','08:00','Hoàn thành'),
+(2,2,2,'2025-01-11','09:00','Hoàn thành'),
+(3,3,4,'2025-01-13','14:00','Hoàn thành'),
+(4,4,6,'2025-01-15','08:30','Hoàn thành'),
+(5,5,8,'2025-01-17','10:30','Hoàn thành'),
+(6,6,9,'2025-01-18','13:30','Hoàn thành'),
+(7,1,NULL,'2025-02-01','08:00','Đang khám'),
+(8,2,NULL,'2025-02-02','09:00','Đang khám'),
+(9,3,NULL,'2025-02-03','10:00','Đang khám'),
+(10,4,NULL,'2025-02-04','14:00','Đang khám');
+INSERT INTO medical_records
+(patient_id, doctor_id, appointment_id, visit_date, symptoms, diagnosis, treatment_plan, status) VALUES
+(1,1,1,'2025-01-10','Đau răng','Sâu răng','Trám răng','Hoàn tất'),
+(2,2,2,'2025-01-11','Răng lệch','Sai khớp cắn','Niềng răng','Hoàn tất'),
+(3,3,3,'2025-01-13','Mất răng','Mất răng số 6','Cấy Implant','Hoàn tất'),
+(4,4,4,'2025-01-15','Chảy máu chân răng','Viêm nha chu','Điều trị nha chu','Hoàn tất'),
+(5,5,5,'2025-01-17','Đau răng sữa','Viêm tủy','Điều trị tủy','Hoàn tất'),
+(6,6,6,'2025-01-18','Răng gãy','Chấn thương','Bọc sứ','Hoàn tất'),
+(7,1,7,'2025-02-01','Đau hàm','Viêm hàm','Theo dõi','Đang khám'),
+(8,2,8,'2025-02-02','Răng mọc lệch','Sai khớp','Tư vấn','Đang khám'),
+(9,3,9,'2025-02-03','Mất răng','Mất răng','Implant','Đang khám'),
+(10,4,10,'2025-02-04','Viêm nướu','Nha chu','Điều trị','Đang khám');
+INSERT INTO medicines (medicine_name, unit, price) VALUES
+('Paracetamol','Viên',2000),
+('Amoxicillin','Viên',3000),
+('Ibuprofen','Viên',2500),
+('Metronidazole','Viên',3500),
+('Vitamin C','Viên',1500),
+('Chlorhexidine','Chai',20000),
+('Spiramycin','Viên',4000),
+('Alpha Choay','Viên',5000),
+('Cefalexin','Viên',4500),
+('Efferalgan','Viên',3000);
+INSERT INTO prescriptions (record_id) VALUES
+(1),(2),(3),(4),(5),(6),(7),(8),(9),(10);
+
+INSERT INTO prescription_items
+(prescription_id, medicine_id, dosage, frequency, duration) VALUES
+(1,1,'1 viên','2 lần/ngày','5 ngày'),
+(2,2,'1 viên','3 lần/ngày','7 ngày'),
+(3,3,'1 viên','2 lần/ngày','5 ngày'),
+(4,4,'1 viên','3 lần/ngày','7 ngày'),
+(5,5,'1 viên','1 lần/ngày','10 ngày'),
+(6,6,'Súc miệng','2 lần/ngày','7 ngày'),
+(7,7,'1 viên','2 lần/ngày','5 ngày'),
+(8,8,'1 viên','3 lần/ngày','7 ngày'),
+(9,9,'1 viên','2 lần/ngày','5 ngày'),
+(10,10,'1 viên','2 lần/ngày','3 ngày');
+INSERT INTO services (service_name, price) VALUES
+('Khám tổng quát',100000),
+('Trám răng',300000),
+('Nhổ răng',500000),
+('Niềng răng',25000000),
+('Cấy Implant',15000000),
+('Bọc răng sứ',6000000),
+('Lấy cao răng',200000),
+('Tẩy trắng răng',2000000),
+('Điều trị nha chu',800000),
+('Điều trị tủy',1200000);
+INSERT INTO invoices (patient_id, appointment_id, total_amount, invoice_date, status) VALUES
+(1,1,300000,'2025-01-10','Đã thanh toán'),
+(2,2,25000000,'2025-01-11','Đã thanh toán'),
+(3,3,15000000,'2025-01-13','Đã thanh toán'),
+(4,4,800000,'2025-01-15','Đã thanh toán'),
+(5,5,1200000,'2025-01-17','Đã thanh toán'),
+(6,6,6000000,'2025-01-18','Đã thanh toán'),
+(7,7,100000,'2025-02-01','Chưa thanh toán'),
+(8,8,100000,'2025-02-02','Chưa thanh toán'),
+(9,9,15000000,'2025-02-03','Chưa thanh toán'),
+(10,10,800000,'2025-02-04','Chưa thanh toán');
+
+INSERT INTO invoice_details (invoice_id, service_id, quantity, price) VALUES
+(1,2,1,300000),
+(2,4,1,25000000),
+(3,5,1,15000000),
+(4,9,1,800000),
+(5,10,1,1200000),
+(6,6,1,6000000),
+(7,1,1,100000),
+(8,1,1,100000),
+(9,5,1,15000000),
+(10,9,1,800000);
+
+INSERT INTO payments (invoice_id, payment_method, amount) VALUES
+(1,'Tiền mặt',300000),
+(2,'Chuyển khoản',25000000),
+(3,'Chuyển khoản',15000000),
+(4,'Tiền mặt',800000),
+(5,'Thẻ',1200000),
+(6,'Chuyển khoản',6000000);
+
