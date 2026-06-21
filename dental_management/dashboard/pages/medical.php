@@ -6,6 +6,11 @@
     require_once __DIR__ . "/../../dental_login/auth.php";
     requireRole(['ADMIN', 'DOCTOR']);
 
+    // Lấy đúng mã bác sĩ (doctors.doctor_id) đã được gán sẵn vào session lúc đăng nhập
+    // (xem dental_login/index.php) để so sánh với mr.doctor_id. Bảng "doctors" không có
+    // cột "user_id" trong CSDL thật, nên không được truy vấn theo hướng đó.
+    $current_doctor_id = (int)($_SESSION['user']['doctor_id'] ?? 0);
+
     $sql = "
         SELECT 
             p.patient_id,
@@ -56,7 +61,7 @@
                 <td class="actions">
 
                     <!-- KHÁM / TIẾP TỤC KHÁM -->
-                    <?php if ($p['record_id'] && $p['treating_doctor'] == $user_id): ?>
+                    <?php if ($p['record_id'] && $p['treating_doctor'] == $current_doctor_id): ?>
 
                         <!-- Chính bác sĩ này đang khám -->
                         <a class="btn edit"

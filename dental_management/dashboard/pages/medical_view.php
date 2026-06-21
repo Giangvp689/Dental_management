@@ -8,7 +8,20 @@ $user     = $_SESSION['user'];
 $user_id  = (int)$user['user_id'];
 $role     = $user['role'];
 
-$doctor_id = $user_id; // QUY ƯỚC: doctor_id = user_id
+// Lấy đúng mã bác sĩ (doctors.doctor_id) đã được gán sẵn vào session lúc đăng nhập
+// (xem dental_login/index.php). Bảng "doctors" không có cột "user_id" trong CSDL thật,
+// nên không được truy vấn theo hướng đó — chỉ dùng giá trị đã có sẵn trong session.
+$doctor_id = $user_id; // mặc định giữ nguyên cho ADMIN
+
+if ($role === 'DOCTOR') {
+    $linked_doctor_id = $_SESSION['user']['doctor_id'] ?? null;
+
+    if (!$linked_doctor_id) {
+        die("Tài khoản bác sĩ này chưa được liên kết với hồ sơ bác sĩ trong bảng doctors. Vui lòng liên hệ quản trị viên.");
+    }
+
+    $doctor_id = (int)$linked_doctor_id;
+}
 
 $action     = $_POST['action'] ?? '';
 $patient_id = (int)($_GET['patient_id'] ?? 0);
@@ -287,10 +300,10 @@ $stmt = $pdo->prepare("
         p.full_name AS patient,
         p.gender,
         p.dob,
-        u.full_name AS doctor
+        d.full_name AS doctor
     FROM medical_records m
     JOIN patients p ON m.patient_id=p.patient_id
-    JOIN users u ON m.doctor_id=u.user_id
+    JOIN doctors d ON m.doctor_id=d.doctor_id
     WHERE m.record_id=?
 ");
 $stmt->execute([$record['record_id']]);
