@@ -55,10 +55,16 @@ function getModule($page) {
         'medicines'  => 'medicines',
         
         'report'   => 'reports',
-        'reports'  => 'reports'
+        'reports'  => 'reports',
+
+        'change_password' => 'change_password',
     ];
 
     $base = $page;
+    
+    if (isset($map[$page])) {
+        return $map[$page];
+    }
 
     if (str_contains($page, '_')) {
         $base = explode('_', $page)[0];
@@ -188,6 +194,10 @@ $appointmentsToday = $pdo->query("
                     <a href="dashboard.php?page=reports">📊Báo cáo thống kê</a></li>
                 <?php endif; ?>
 
+                <li class="<?= $page=='change_password'?'active':'' ?>">
+                    <a href="dashboard.php?page=change_password">🔑 Đổi mật khẩu</a>
+                </li>
+
                 <li class="logout">
                     <a href="../dental_login/index.php">🚪 Đăng xuất</a>
                 </li>
@@ -276,6 +286,24 @@ $appointmentsToday = $pdo->query("
                     <?php endif; ?>
 
             <?php else: ?>
+
+                <!-- TOPBAR dùng chung cho mọi page -->
+                <header class="topbar">
+                    <span>
+                        Xin chào,
+                        <b><?= htmlspecialchars($_SESSION["user"]["full_name"] ?? $_SESSION["user"]["username"]) ?></b>
+                        (<?= $role ?>)
+                    </span>
+                    <span style="display:flex;align-items:center;gap:12px">
+                        <span><?= date("d/m/Y") ?></span>
+                        <a href="dashboard.php?page=change_password"
+                           style="font-size:13px;color:#4f46e5;text-decoration:none;
+                                  background:#eef2ff;padding:4px 10px;border-radius:20px;
+                                  border:1px solid #c7d2fe">
+                            🔑 Đổi mật khẩu
+                        </a>
+                    </span>
+                </header>
 
                 <!-- LOAD PAGE -->
                 <?php include __DIR__ . "/pages/$page.php"; ?>

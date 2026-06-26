@@ -12,20 +12,23 @@ return [
         'invoices',
         'reports',
         'accounts',
-        'staffs'
+        'staffs',
+        'change_password',
     ],
 
     'DOCTOR' => [
         'dashboard',
         'appointments',
         'patients',
-        'medical'
+        'medical',
+        'change_password',
     ],
 
     'RECEPTIONIST' => [
         'dashboard',
         'appointments',
         'patients',
-        'invoices'
+        'invoices',
+        'change_password',
     ]
 ];
